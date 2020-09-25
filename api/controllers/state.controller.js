@@ -98,7 +98,22 @@ exports.deleteAll = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-State.getAll(req, (err, data) => {
+	
+	//console.log("Server is running on port 3000."+req.query.name);
+	State.getAll(req, (err, data) => {
+		if (err)
+		  res.status(500).send({
+			message:
+			  err.message || "Some error occurred while retrieving customers."
+		  });
+		else res.send(data);
+	});
+};
+
+
+exports.findAllSearch = (req, res) => {
+	
+  State.getAll(req,(err, data) => {
     if (err)
       res.status(500).send({
         message:

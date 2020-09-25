@@ -42,25 +42,37 @@ State.findById = (stateId, result) => {
 };
 
 State.getAll = (req, result) => {
-	const Op = function(state) {
-	  this.name = state.name;
-	  this.state_code = state.state_code;
-	  this.status = state.status;
-	  this.created_at = state.created_at;
-	  this.modified_at = state.modified_at;    
-	};	
-	 const name = req.query.name;
-	var condition = name ? { name: { [like]: `%${name}%` } } : '';
-  sql.query(`SELECT * FROM dgnote_trailer_state `, (err, res) => {
-    if (err) {
-      console.log("error: ", err);
-      result(null, err);
-      return;
-    }
+	
+	//let sqlQuery = `select * from dgnote_trailer_state
+      //  where name like  ${req.query.name}`;
+    var sql1 = "select * from dgnote_trailer_state ";
+    
+    console.log("Server is running on port 3000."+sql1);
+    
+    var existingParams = ["id","name"].filter(field => req.query[field]);
+	console.log("Server is running on port 3000."+existingParams);
+	if (existingParams.length) {
+		sql1 += " WHERE ";
+		sql1 += existingParams.map(field => `${field} = ${req.query[existingParams]}`).join(" AND ");
+	}    
 
-    console.log("states: ", res);
-    result(null, res);
-  });
+    sql.query(sql1, (err, res) => {
+		console.log("Server is running on port 3000."+sql1);
+		if (err) {
+		  console.log("error: ", err);
+		  result(err, null);
+		  return;
+		}
+
+		if (res.length) {
+		  console.log("found customer: ", res);
+		  result(null, res);
+		  return;
+		}
+
+		// not found Customer with the id
+		result({ kind: "not_found" }, null);
+	});  
 };
 
 State.updateById = (id, state, result) => {
@@ -118,34 +130,5 @@ State.removeAll = result => {
   });
 };
 
-State.search = (req, result) => {
-  let sqlQuery = `select * from dgnote_trailer_state
-        where id = ${req.id} OR name like  ${req.name}`;
-        
-	var sql = "select * from dgnote_trailer_state ";
-	const existingParams = ["id", "name"].filter(field => req.query[field]);
-
-	if (existingParams.length) {
-		sql += " WHERE ";
-		sql += existingParams.map(field => `${field} = ?`).join(" AND ");
-	}
-      
-  sql.query(sql,[state.state_code, state.name, state.status, id], (err, res) => {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-      return;
-    }
-
-    if (res.length) {
-      console.log("found state: ", res[0]);
-      result(null, res[0]);
-      return;
-    }
-
-    // not found Customer with the id
-    result({ kind: "not_found" }, null);
-  });
-};
 
 module.exports = State;
